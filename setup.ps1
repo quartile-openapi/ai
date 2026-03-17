@@ -129,9 +129,11 @@ if (Get-Command uv -ErrorAction SilentlyContinue) {
 Write-Host ""
 Write-Host "[4/4] Installing qtk CLI..." -ForegroundColor Yellow
 
+$ErrorActionPreference = "Continue"
 uv tool install quartile-dev-toolkit --force 2>&1 | ForEach-Object {
     if ($_ -match "error|Error") { Write-Host "    $_" -ForegroundColor Red }
 }
+$ErrorActionPreference = "Stop"
 
 if (Get-Command qtk -ErrorAction SilentlyContinue) {
     Write-Host "    OK: $(qtk --version)" -ForegroundColor Green
