@@ -112,15 +112,26 @@ $output | ForEach-Object {
     if ($line -match "error|Error") { Write-Host "    $line" -ForegroundColor Red }
 }
 
+# Discover uv tool bin dir and ensure it's in session PATH
+$uvBinDir = $null
+try { $uvBinDir = (uv tool dir --bin 2>$null); if ($uvBinDir) { $uvBinDir = $uvBinDir.Trim() } } catch {}
+if (-not $uvBinDir) { $uvBinDir = "$env:USERPROFILE\.local\bin" }
+
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
             [System.Environment]::GetEnvironmentVariable("Path", "User")
+if ($env:Path -notlike "*$uvBinDir*") { $env:Path = "$uvBinDir;$env:Path" }
 
 if (Get-Command qtk -ErrorAction SilentlyContinue) {
     Write-Host "    OK: $(qtk --version)" -ForegroundColor Green
 } else {
-    Write-Host "    ERROR: qtk not found after install." -ForegroundColor Red
-    Write-Host "    Try: uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
-    exit 1
+    Write-Host ""
+    Write-Host "    WARN: qtk was installed but is not yet available in this session." -ForegroundColor DarkYellow
+    Write-Host ""
+    Write-Host "    The binary was placed in: $uvBinDir" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "    To fix, do ONE of the following:" -ForegroundColor DarkGray
+    Write-Host "      1. Close and reopen your terminal" -ForegroundColor DarkGray
+    Write-Host "      2. Run manually:  uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
 }
 
 # ── Done ─────────────────────────────────────────────────────────────────

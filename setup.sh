@@ -102,15 +102,25 @@ echo "[4/4] Installing qtk CLI..."
 
 uv tool install quartile-dev-toolkit --force 2>&1 || true
 
-export PATH="$HOME/.local/bin:$PATH"
+# Discover uv tool bin dir and ensure it's in session PATH
+UV_BIN_DIR="$(uv tool dir --bin 2>/dev/null || echo "$HOME/.local/bin")"
+export PATH="$UV_BIN_DIR:$HOME/.local/bin:$PATH"
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
 
 if command -v qtk &>/dev/null; then
     echo "    OK: $(qtk --version)"
 else
-    echo "    ERROR: qtk not found after install."
-    echo "    Try: uv tool run --from quartile-dev-toolkit qtk --version"
-    exit 1
+    echo ""
+    echo "    WARN: qtk was installed but is not yet available in this session."
+    echo ""
+    echo "    The binary was placed in: $UV_BIN_DIR"
+    echo ""
+    echo "    To fix, do ONE of the following:"
+    echo "      1. Close and reopen your terminal"
+    echo "      2. Run:  export PATH=\"$UV_BIN_DIR:\$PATH\""
+    echo ""
+    echo "    To verify:  qtk --version"
+    echo "    Or run directly:  uv tool run --from quartile-dev-toolkit qtk --version"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────
