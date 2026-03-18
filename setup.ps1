@@ -4,13 +4,15 @@
     Bootstrap quartile-dev-toolkit: validates env var, installs UV, and installs the qtk CLI.
 
 .DESCRIPTION
-    Prerequisites:
-      Set UV_EXTRA_INDEX_URL before running (see README.md for PAT + URL instructions).
+    Prerequisites (must be installed before running this script):
+      - Node.js (npx)
+      - uv
+      See docs/prerequisites.md for installation instructions.
 
     Steps:
       1. Validates UV_EXTRA_INDEX_URL is set
-      2. Checks for Node.js (npx); installs via winget if missing (required for npx-based MCPs)
-      3. Installs UV if not present (user-level, no admin required)
+      2. Checks that Node.js (npx) is installed
+      3. Checks that uv is installed
       4. Installs qtk CLI from Azure Artifacts feed
 
     After this, use the CLI to install components:
@@ -76,28 +78,11 @@ if (Get-Command npx -ErrorAction SilentlyContinue) {
     $npxVersion = (npx --version 2>$null)
     Write-Host "    Found: npx $npxVersion" -ForegroundColor Green
 } else {
-    Write-Host "    Not found. Installing Node.js LTS via winget (if available)..." -ForegroundColor DarkYellow
-    $winget = Get-Command winget -ErrorAction SilentlyContinue
-    if ($winget) {
-        try {
-            $proc = Start-Process -FilePath "winget" -ArgumentList "install", "OpenJS.NodeJS.LTS", "--accept-package-agreements", "--accept-source-agreements" -Wait -PassThru -NoNewWindow
-            if ($proc.ExitCode -eq 0) {
-                $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
-                            [System.Environment]::GetEnvironmentVariable("Path", "User")
-                if (Get-Command npx -ErrorAction SilentlyContinue) {
-                    Write-Host "    Installed: npx $(npx --version 2>$null)" -ForegroundColor Green
-                } else {
-                    Write-Host "    Node.js installed. Restart terminal for npx to be in PATH." -ForegroundColor DarkYellow
-                }
-            } else {
-                Write-Host "    winget install failed or declined. Install manually: https://nodejs.org/" -ForegroundColor DarkYellow
-            }
-        } catch {
-            Write-Host "    Install failed: $($_.Exception.Message). Install manually: https://nodejs.org/" -ForegroundColor DarkYellow
-        }
-    } else {
-        Write-Host "    winget not available. Install Node.js LTS from: https://nodejs.org/" -ForegroundColor DarkYellow
-    }
+    Write-Host "    ERROR: Node.js (npx) is not installed." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "    Install with: choco install nodejs-lts" -ForegroundColor DarkGray
+    Write-Host "    or download from https://nodejs.org/ (LTS)" -ForegroundColor DarkGray
+    exit 1
 }
 
 # ── Step 3: UV ───────────────────────────────────────────────────────────
@@ -107,22 +92,11 @@ Write-Host "[3/4] Checking UV..." -ForegroundColor Yellow
 if (Get-Command uv -ErrorAction SilentlyContinue) {
     Write-Host "    Found: $(uv --version)" -ForegroundColor Green
 } else {
-    Write-Host "    Installing UV (user-level, no admin required)..." -ForegroundColor DarkYellow
-    try {
-        irm https://astral.sh/uv/install.ps1 | iex
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
-                    [System.Environment]::GetEnvironmentVariable("Path", "User")
-    } catch {
-        Write-Host "    Failed to install UV: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "    Manual install: https://docs.astral.sh/uv/" -ForegroundColor DarkGray
-        exit 1
-    }
-
-    if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "    UV installed but not in PATH. Restart terminal and re-run." -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "    Installed: $(uv --version)" -ForegroundColor Green
+    Write-Host "    ERROR: uv is not installed." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "    Install with:" -ForegroundColor DarkGray
+    Write-Host '    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"' -ForegroundColor DarkGray
+    exit 1
 }
 
 # ── Step 4: CLI ───────────────────────────────────────────────────────────
@@ -138,11 +112,15 @@ $output | ForEach-Object {
     if ($line -match "error|Error") { Write-Host "    $line" -ForegroundColor Red }
 }
 
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+            [System.Environment]::GetEnvironmentVariable("Path", "User")
+
 if (Get-Command qtk -ErrorAction SilentlyContinue) {
     Write-Host "    OK: $(qtk --version)" -ForegroundColor Green
 } else {
-    Write-Host "    CLI installed (restart terminal if 'qtk' not found)" -ForegroundColor DarkYellow
-    Write-Host "    Fallback: uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
+    Write-Host "    ERROR: qtk not found after install." -ForegroundColor Red
+    Write-Host "    Try: uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
+    exit 1
 }
 
 # ── Done ─────────────────────────────────────────────────────────────────

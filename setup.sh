@@ -2,13 +2,15 @@
 #
 # setup.sh — Bootstrap quartile-dev-toolkit (Linux/macOS)
 #
-# Prerequisites:
-#   Set UV_EXTRA_INDEX_URL before running (see README.md for PAT + URL instructions).
+# Prerequisites (must be installed before running this script):
+#   - Node.js (npx)
+#   - uv
+#   See docs/prerequisites.md for installation instructions.
 #
 # Steps:
 #   1. Validates UV_EXTRA_INDEX_URL is set
-#   2. Checks for Node.js (npx); installs via brew (macOS) or apt (Debian-based Linux) if missing
-#   3. Installs UV if not present (user-level, no admin/sudo required)
+#   2. Checks that Node.js (npx) is installed
+#   3. Checks that uv is installed
 #   4. Installs qtk CLI from Azure Artifacts feed
 #
 # Usage:
@@ -72,37 +74,12 @@ echo "[2/4] Checking Node.js (npx)..."
 if command -v npx &>/dev/null; then
     echo "    Found: npx $(npx --version)"
 else
-    echo "    Not found. Attempting to install Node.js..."
-    NODE_OK=0
-    case "$(uname -s)" in
-        Darwin)
-            if command -v brew &>/dev/null; then
-                if (brew install node 2>/dev/null); then
-                    export PATH="$(brew --prefix)/bin:$PATH"
-                    command -v npx &>/dev/null && NODE_OK=1
-                fi
-            fi
-            if [ "$NODE_OK" -eq 0 ]; then
-                echo "    ERROR: macOS requires Homebrew (brew install node). Install from https://nodejs.org/ if needed."
-            fi
-            ;;
-        Linux)
-            if [ -f /etc/debian_version ] && command -v apt-get &>/dev/null; then
-                if (sudo apt-get update -qq 2>/dev/null && sudo apt-get install -y nodejs npm 2>/dev/null); then
-                    command -v npx &>/dev/null && NODE_OK=1
-                fi
-            fi
-            if [ "$NODE_OK" -eq 0 ]; then
-                echo "    ERROR: Only Debian-based Linux is supported for auto-install. Install Node.js LTS from https://nodejs.org/"
-            fi
-            ;;
-        *)
-            echo "    ERROR: Unsupported platform for Node.js auto-install. Install Node.js LTS from https://nodejs.org/"
-            ;;
-    esac
-    if [ "$NODE_OK" -eq 1 ]; then
-        echo "    Installed: npx $(npx --version)"
-    fi
+    echo "    ERROR: Node.js (npx) is not installed."
+    echo ""
+    echo "    Install from https://nodejs.org/ (LTS recommended)"
+    echo "    or: brew install node  (macOS)"
+    echo "    or: sudo apt-get install -y nodejs  (Debian/Ubuntu)"
+    exit 1
 fi
 
 # ── Step 3: UV ───────────────────────────────────────────────────────────
@@ -112,19 +89,11 @@ echo "[3/4] Checking UV..."
 if command -v uv &>/dev/null; then
     echo "    Found: $(uv --version)"
 else
-    echo "    Installing UV (user-level, no sudo required)..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-
-    # Source env files UV may have created
-    [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-    [ -f "$HOME/.cargo/env" ]     && source "$HOME/.cargo/env"
-    export PATH="$HOME/.local/bin:$PATH"
-
-    if ! command -v uv &>/dev/null; then
-        echo "    UV installed but not in PATH. Restart terminal and re-run."
-        exit 1
-    fi
-    echo "    Installed: $(uv --version)"
+    echo "    ERROR: uv is not installed."
+    echo ""
+    echo "    Install with:"
+    echo "    curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
 fi
 
 # ── Step 4: CLI ──────────────────────────────────────────────────────────
@@ -133,10 +102,15 @@ echo "[4/4] Installing qtk CLI..."
 
 uv tool install quartile-dev-toolkit --force 2>&1 || true
 
+export PATH="$HOME/.local/bin:$PATH"
+[ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
+
 if command -v qtk &>/dev/null; then
     echo "    OK: $(qtk --version)"
 else
-    echo "    CLI installed (restart shell if 'qtk' not found)"
+    echo "    ERROR: qtk not found after install."
+    echo "    Try: uv tool run --from quartile-dev-toolkit qtk --version"
+    exit 1
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────
