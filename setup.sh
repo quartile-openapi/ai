@@ -100,40 +100,51 @@ fi
 echo ""
 echo "[4/4] Installing qtk CLI..."
 
-uv tool install quartile-dev-toolkit --force 2>&1 || true
+uv tool install quartile-dev-toolkit --force 2>&1 | sed 's/^/    /'
+uv_exit=${PIPESTATUS[0]}
 
-# Discover uv tool bin dir and ensure it's in session PATH
-UV_BIN_DIR="$(uv tool dir --bin 2>/dev/null || echo "$HOME/.local/bin")"
-export PATH="$UV_BIN_DIR:$HOME/.local/bin:$PATH"
-[ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-
-if command -v qtk &>/dev/null; then
-    echo "    OK: $(qtk --version)"
+qtk_found=false
+if [ "$uv_exit" -ne 0 ]; then
+    echo ""
+    echo "    ERROR: uv tool install failed (exit code $uv_exit)."
+    echo "    Check the output above for details."
 else
-    echo ""
-    echo "    WARN: qtk was installed but is not yet available in this session."
-    echo ""
-    echo "    The binary was placed in: $UV_BIN_DIR"
-    echo ""
-    echo "    To fix, do ONE of the following:"
-    echo "      1. Close and reopen your terminal"
-    echo "      2. Run:  export PATH=\"$UV_BIN_DIR:\$PATH\""
-    echo ""
-    echo "    To verify:  qtk --version"
-    echo "    Or run directly:  uv tool run --from quartile-dev-toolkit qtk --version"
+    # Discover uv tool bin dir and ensure it's in session PATH
+    UV_BIN_DIR="$(uv tool dir --bin 2>/dev/null || echo "$HOME/.local/bin")"
+    export PATH="$UV_BIN_DIR:$HOME/.local/bin:$PATH"
+    [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
+
+    if command -v qtk &>/dev/null; then
+        echo "    OK: $(qtk --version)"
+        qtk_found=true
+    else
+        echo ""
+        echo "    WARN: qtk was installed but is not yet available in this session."
+        echo ""
+        echo "    The binary was placed in: $UV_BIN_DIR"
+        echo ""
+        echo "    To fix, do ONE of the following:"
+        echo "      1. Close and reopen your terminal"
+        echo "      2. Run:  export PATH=\"$UV_BIN_DIR:\$PATH\""
+        echo ""
+        echo "    To verify:  qtk --version"
+        echo "    Or run directly:  uv tool run --from quartile-dev-toolkit qtk --version"
+    fi
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────
 echo ""
-echo "=== Setup complete! ==="
-echo ""
-echo "    Next steps:"
-echo "      qtk install --level global              Install skills/agents/hooks globally"
-echo "      qtk install --level project -p NAME     Install for a specific project"
-echo "      qtk doctor                              Verify configuration"
-echo ""
-echo "    Other commands:"
-echo "      qtk sync       Upgrade to latest version"
-echo "      qtk list       Show installed components"
-echo "      qtk remove     Remove installed components"
-echo ""
+if [ "$qtk_found" = true ]; then
+    echo "=== Setup complete! ==="
+    echo ""
+    echo "    Next steps:"
+    echo "      qtk install --level global              Install skills/agents/hooks globally"
+    echo "      qtk install --level project -p NAME     Install for a specific project"
+    echo "      qtk doctor                              Verify configuration"
+    echo ""
+    echo "    Other commands:"
+    echo "      qtk sync       Upgrade to latest version"
+    echo "      qtk list       Show installed components"
+    echo "      qtk remove     Remove installed components"
+    echo ""
+fi

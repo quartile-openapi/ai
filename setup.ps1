@@ -106,45 +106,53 @@ Write-Host "[4/4] Installing qtk CLI..." -ForegroundColor Yellow
 $prevPref = $ErrorActionPreference
 $ErrorActionPreference = "SilentlyContinue"
 $output = uv tool install quartile-dev-toolkit --force 2>&1
+$uvExitCode = $LASTEXITCODE
 $ErrorActionPreference = $prevPref
-$output | ForEach-Object {
-    $line = $_.ToString()
-    if ($line -match "error|Error") { Write-Host "    $line" -ForegroundColor Red }
-}
+$output | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
 
-# Discover uv tool bin dir and ensure it's in session PATH
-$uvBinDir = $null
-try { $uvBinDir = (uv tool dir --bin 2>$null); if ($uvBinDir) { $uvBinDir = $uvBinDir.Trim() } } catch {}
-if (-not $uvBinDir) { $uvBinDir = "$env:USERPROFILE\.local\bin" }
-
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
-            [System.Environment]::GetEnvironmentVariable("Path", "User")
-if ($env:Path -notlike "*$uvBinDir*") { $env:Path = "$uvBinDir;$env:Path" }
-
-if (Get-Command qtk -ErrorAction SilentlyContinue) {
-    Write-Host "    OK: $(qtk --version)" -ForegroundColor Green
+$qtkFound = $false
+if ($uvExitCode -ne 0) {
+    Write-Host ""
+    Write-Host "    ERROR: uv tool install failed (exit code $uvExitCode)." -ForegroundColor Red
+    Write-Host "    Check the output above for details." -ForegroundColor DarkGray
 } else {
-    Write-Host ""
-    Write-Host "    WARN: qtk was installed but is not yet available in this session." -ForegroundColor DarkYellow
-    Write-Host ""
-    Write-Host "    The binary was placed in: $uvBinDir" -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "    To fix, do ONE of the following:" -ForegroundColor DarkGray
-    Write-Host "      1. Close and reopen your terminal" -ForegroundColor DarkGray
-    Write-Host "      2. Run manually:  uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
+    # Discover uv tool bin dir and ensure it's in session PATH
+    $uvBinDir = $null
+    try { $uvBinDir = (uv tool dir --bin 2>$null); if ($uvBinDir) { $uvBinDir = $uvBinDir.Trim() } } catch {}
+    if (-not $uvBinDir) { $uvBinDir = "$env:USERPROFILE\.local\bin" }
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+                [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($env:Path -notlike "*$uvBinDir*") { $env:Path = "$uvBinDir;$env:Path" }
+
+    if (Get-Command qtk -ErrorAction SilentlyContinue) {
+        Write-Host "    OK: $(qtk --version)" -ForegroundColor Green
+        $qtkFound = $true
+    } else {
+        Write-Host ""
+        Write-Host "    WARN: qtk was installed but is not yet available in this session." -ForegroundColor DarkYellow
+        Write-Host ""
+        Write-Host "    The binary was placed in: $uvBinDir" -ForegroundColor DarkGray
+        Write-Host ""
+        Write-Host "    To fix, do ONE of the following:" -ForegroundColor DarkGray
+        Write-Host "      1. Close and reopen your terminal" -ForegroundColor DarkGray
+        Write-Host "      2. Run manually:  uv tool run --from quartile-dev-toolkit qtk --version" -ForegroundColor DarkGray
+    }
 }
 
 # ── Done ─────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "=== Setup complete! ===" -ForegroundColor Green
-Write-Host ""
-Write-Host "    Next steps:" -ForegroundColor Cyan
-Write-Host "      qtk install --level global              Install skills/agents/hooks globally"
-Write-Host "      qtk install --level project -p NAME     Install for a specific project"
-Write-Host "      qtk doctor                              Verify configuration"
-Write-Host ""
-Write-Host "    Other commands:" -ForegroundColor Cyan
-Write-Host "      qtk sync       Upgrade to latest version"
-Write-Host "      qtk list       Show installed components"
-Write-Host "      qtk remove     Remove installed components"
-Write-Host ""
+if ($qtkFound) {
+    Write-Host "=== Setup complete! ===" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "    Next steps:" -ForegroundColor Cyan
+    Write-Host "      qtk install --level global              Install skills/agents/hooks globally"
+    Write-Host "      qtk install --level project -p NAME     Install for a specific project"
+    Write-Host "      qtk doctor                              Verify configuration"
+    Write-Host ""
+    Write-Host "    Other commands:" -ForegroundColor Cyan
+    Write-Host "      qtk sync       Upgrade to latest version"
+    Write-Host "      qtk list       Show installed components"
+    Write-Host "      qtk remove     Remove installed components"
+    Write-Host ""
+}
