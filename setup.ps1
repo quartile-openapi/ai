@@ -16,8 +16,8 @@
       4. Installs qtk CLI from Azure Artifacts feed
 
     After this, use the CLI to install components:
-      qtk install --level global
-      qtk install --level project -p di-gathering
+      qtk install project --level global
+      qtk install project --level project -p di-gathering
       qtk doctor
 
 .PARAMETER FeedUrl
@@ -146,13 +146,14 @@ if ($qtkFound) {
     Write-Host "=== Setup complete! ===" -ForegroundColor Green
     Write-Host ""
     Write-Host "    Next steps:" -ForegroundColor Cyan
-    Write-Host "      qtk install --level global              Install skills/agents/hooks globally"
-    Write-Host "      qtk install --level project -p NAME     Install for a specific project"
-    Write-Host "      qtk doctor                              Verify configuration"
+    Write-Host "      qtk install project --level global              Install all projects globally"
+    Write-Host "      qtk install project --level project -p NAME     Install one project in this directory"
+    Write-Host "      qtk doctor                                      Verify configuration"
     Write-Host ""
     Write-Host "    Other commands:" -ForegroundColor Cyan
-    Write-Host "      qtk sync       Upgrade to latest version"
-    Write-Host "      qtk list       Show installed components"
-    Write-Host "      qtk remove     Remove installed components"
+    Write-Host "      qtk sync              Upgrade to latest version"
+    Write-Host "      qtk list project      Show projects and installation status"
+    Write-Host "      qtk install mcp       Add MCP servers (interactive)"
+    Write-Host "      qtk remove project    Remove installed project components"
     Write-Host ""
 }

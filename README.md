@@ -94,6 +94,6 @@ curl -sSf https://raw.githubusercontent.com/quartile-openapi/ai/main/setup.sh | 
 After setup, use `qtk` to install skills, agents, and hooks:
 
 ```bash
-qtk install --level global
+qtk install project --level global
 qtk doctor
 ```
