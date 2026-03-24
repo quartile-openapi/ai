@@ -91,9 +91,11 @@ curl -sSf https://raw.githubusercontent.com/quartile-openapi/ai/main/setup.sh | 
 3. Checks that `uv` is installed
 4. Installs the `qtk` CLI via `uv tool install quartile-dev-toolkit`
 
-After setup, use `qtk` to install skills, agents, and hooks:
+After setup, the script suggests:
 
 ```bash
-qtk install project --level global
+qtk --help
 qtk doctor
 ```
+
+To install toolkit projects (skills, agents, hooks), run e.g. `qtk install project --level global` (see `--help` for all commands).

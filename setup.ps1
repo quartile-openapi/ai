@@ -146,14 +146,7 @@ if ($qtkFound) {
     Write-Host "=== Setup complete! ===" -ForegroundColor Green
     Write-Host ""
     Write-Host "    Next steps:" -ForegroundColor Cyan
-    Write-Host "      qtk install project --level global              Install all projects globally"
-    Write-Host "      qtk install project --level project -p NAME     Install one project in this directory"
-    Write-Host "      qtk doctor                                      Verify configuration"
-    Write-Host ""
-    Write-Host "    Other commands:" -ForegroundColor Cyan
-    Write-Host "      qtk sync              Upgrade to latest version"
-    Write-Host "      qtk list project      Show projects and installation status"
-    Write-Host "      qtk install mcp       Add MCP servers (interactive)"
-    Write-Host "      qtk remove project    Remove installed project components"
+    Write-Host "      qtk --help    List commands and options"
+    Write-Host "      qtk doctor    Verify configuration"
     Write-Host ""
 }
