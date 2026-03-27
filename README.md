@@ -84,6 +84,11 @@ powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/qua
 curl -sSf https://raw.githubusercontent.com/quartile-openapi/ai/main/setup.sh | bash -s "<FEED_URL>"
 ```
 
+Example URLs (replace `<PAT>` with your token); only the feed segment differs between stable and preview:
+
+- Stable: `https://quartiledigital:<PAT>@pkgs.dev.azure.com/quartiledigital/QD_AI/_packaging/ai-prod/pypi/simple/`
+- Preview (`dev` branch): `https://quartiledigital:<PAT>@pkgs.dev.azure.com/quartiledigital/QD_AI/_packaging/ai-dev/pypi/simple/`
+
 ## What the script does
 
 1. Validates `UV_EXTRA_INDEX_URL` is set (or accepts it as an argument)
