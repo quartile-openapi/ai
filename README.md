@@ -103,4 +103,4 @@ qtk --help
 qtk doctor
 ```
 
-To install toolkit projects (skills, agents, hooks), run e.g. `qtk install project --level global` (see `--help` for all commands).
+To install toolkit projects (skills, agents, hooks), run e.g. `qtk install projects --level global` (see `--help` and `cli/main.py` for command aliases).

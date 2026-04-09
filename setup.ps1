@@ -16,8 +16,8 @@
       4. Installs qtk CLI from Azure Artifacts feed
 
     After this, use the CLI to install components:
-      qtk install project --level global
-      qtk install project --level project -p di-gathering
+      qtk install projects --level global
+      qtk install projects --level project -p di-gathering
       qtk doctor
 
 .PARAMETER FeedUrl

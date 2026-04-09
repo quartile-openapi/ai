@@ -39,7 +39,7 @@ if ($cleanup -in @("y", "Y", "yes", "Yes")) {
         try {
             $prevPref = $ErrorActionPreference
             $ErrorActionPreference = "SilentlyContinue"
-            $output = qtk remove project --level global --yes 2>&1
+            $output = qtk remove projects --level global --yes 2>&1
             $ErrorActionPreference = $prevPref
             $output | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
         } catch {

@@ -33,7 +33,7 @@ case "$cleanup" in
 
         # Try via qtk CLI first
         if command -v qtk &>/dev/null; then
-            qtk remove project --level global --yes 2>/dev/null | sed 's/^/    /' || true
+            qtk remove projects --level global --yes 2>/dev/null | sed 's/^/    /' || true
         fi
 
         # Direct cleanup for anything remaining
